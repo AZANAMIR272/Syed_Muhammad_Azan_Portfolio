@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syed Muhammad Azan Portfolio</title>
+    <!-- Tailwind CSS for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Font - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Three.js for the 3D background animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        /* Define a color palette with CSS variables for a consistent theme */
+        :root {
+            --background-dark: #0a0a0e;
+            --text-light: #e0e0e0;
+            --accent-purple: #8b5cf6; /* A soft purple for accents */
+            --glass-bg: rgba(255, 255, 255, 0.05); /* Very light, semi-transparent white for glass effect */
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Base styles applied to the body for consistent typography and background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            scroll-behavior: smooth;
+            overflow-x: hidden; /* Prevent horizontal scroll from minor layout shifts */
+            margin: 0;
+            position: relative;
+        }
+
+        /* Full-screen container for the 3D background, fixed position to stay behind content */
+        #three-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        /* Custom glassmorphism card effect for a modern UI look */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Custom primary button styles with hover and shadow effects */
+        .btn-primary {
+            background-color: var(--accent-purple);
+            color: var(--background-dark);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(139, 92, 246, 0.7);
+        }
+
+        /* Fade-in and slide-up animation for section content on scroll */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .animate-in.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Staggered animation effect for a more dynamic feel */
+        .animate-in.in-view:nth-child(2) { transition-delay: 0.1s; }
+        .animate-in.in-view:nth-child(3) { transition-delay: 0.2s; }
+        .animate-in.in-view:nth-child(4) { transition-delay: 0.3s; }
+        .animate-in.in-view:nth-child(5) { transition-delay: 0.4s; }
+        .animate-in.in-view:nth-child(6) { transition-delay: 0.5s; }
+
+        /* Typing animation for the hero name text */
+        .typing-effect {
+            animation: typing 2s steps(20, end), blink-caret .75s step-end infinite;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid var(--accent-purple);
+            width: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Keyframes for the typing effect */
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        /* Keyframes for the blinking cursor */
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--accent-purple); }
+        }
+
+        /* Modal/Lightbox Styles for showing certificates and awards */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.is-visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        .modal-content img {
+            max-width: 40%;
+            max-height: 40%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+        .modal-content img.zoomed {
+            transform: scale(2); /* Zoom effect on click */
+            cursor: zoom-out;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 110;
+        }
+        
+        /* Profile image glow effect using pseudo-elements */
+        .profile-photo {
+            position: relative;
+            z-index: 10;
+        }
+        .profile-photo::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.5;
+            filter: blur(20px);
+            z-index: -1;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { transform: scale(0.95); opacity: 0.5; }
+            to { transform: scale(1.05); opacity: 0.7; }
+        }
+        
+        /* Class to hide certificates that are not in the initial view */
+        .hidden-certificate {
+            display: none;
+        }
+
+        /* Custom styles for the Education section timeline */
+        .timeline-container {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 1rem; /* Center the line */
+            width: 2px;
+            height: 100%;
+            background-color: #4b5563; /* Gray line */
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 14px; /* Position the circle over the line */
+            width: 18px;
+            height: 18px;
+            background-color: var(--accent-purple);
+            border-radius: 50%;
+            border: 3px solid #1f2937;
+        }
+        
+        /* Custom styling for horizontal scrolling section for internships */
+        .horizontal-scroll-container {
+            display: flex;
+            overflow-x: hidden; /* Hide the native scrollbar */
+            -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+            scroll-snap-type: x mandatory; /* Snaps cards to the start as you swipe */
+            gap: 2rem;
+            padding-bottom: 1rem; /* Space for scrollbar on some systems */
+            width: 100%;
+        }
+
+        .horizontal-scroll-item {
+            flex: 0 0 320px;
+            width: calc(100% - 2rem);
+            scroll-snap-align: start;
+        }
+        
+        @media (min-width: 640px) {
+            .horizontal-scroll-item {
+                flex: 0 0 320px;
+                width: 320px;
+            }
+        }
+        
+        .horizontal-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- 3D Canvas Container -->
+    <div id="three-container"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="relative z-10">
+
+        <!-- Header & Navigation -->
+        <header class="sticky top-0 z-50 py-4 px-6 md:px-12 bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-lg">
+            <nav class="container mx-auto flex items-center justify-between">
+                <a class="flex title-font font-medium items-center text-white" href="#">
+                    <span class="text-2xl font-bold text-accent-purple">S.M. Azan</span>
+                </a>
+                <!-- Desktop Navigation Menu -->
+                <div class="hidden md:flex flex-grow justify-center space-x-8 text-base">
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#bio">About me</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#skills">Skills</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#education">Education</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#internships">Internships</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#projects">Projects</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#certificates">Certificates</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#awards">Awards</a>
+                    <a class="text-gray-300 hover:text-white transition-colors" href="#contact">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                    <!-- Download CV button now points to the uploaded PDF file -->
+                    <a class="btn-primary hidden md:inline-flex items-center" href="/uploaded:resume Syed Muhammad Azan.pdf" download>
+                        Download CV
+                        <i class="fas fa-download ml-2"></i>
+                    </a>
+                </div>
+            </nav>
+            <!-- Mobile Navigation Menu - Toggles on/off via JavaScript -->
+            <nav id="mobile-menu" class="hidden md:hidden text-center mt-4 space-y-2">
+                <a class="block py-2 text-gray-300 hover:text-white" href="#bio">About/a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#skills">Skills</a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#education">Education</a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#internships">Work&Internships</a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#projects">Projects</a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#certificates">Certificates</a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#awards">Awards</a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#contact">Contact</a>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="hero" class="relative z-10 flex items-center justify-center min-h-screen text-center py-20 px-4">
+            <!-- Responsive flexbox layout for hero section -->
+            <div class="container mx-auto flex flex-col md:flex-row items-center justify-center space-y-12 md:space-y-0 md:space-x-12">
+                
+                <!-- Left Column: Profile Photo (centers on mobile, adjusts on desktop) -->
+                <div class="w-full md:w-1/2 flex justify-center animate-in">
+                    <!-- The profile-photo container now has the glowing effect -->
+                    <div class="profile-photo w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full flex items-center justify-center">
+                        <img class="object-cover object-center w-full h-full rounded-full" alt="Syed Muhammad Azan" src="picofme.png">
+                    </div>
+                </div>
+
+                <!-- Right Column: Name & Text (centers on mobile, left-aligns on desktop) -->
+                <div class="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left animate-in" style="transition-delay: 0.2s;">
+                    <p class="text-xl sm:text-2xl text-gray-300 mb-4 font-light">Hello, I'm</p>
+                    <h1 class="text-5xl sm:text-7xl lg:text-5xl font-black text-white mb-4 leading-tight">
+                        <span class="typing-effect">Syed Muhammad Azan</span>
+                    </h1>
+                    <h2 class="text-2xl sm:text-3xl font-medium text-accent-purple mb-8">
+                        SOFTWARE ENGINEER
+                    </h2>
+                    <p class="max-w-prose text-lg text-gray-400 mb-10">
+                        I am a dedicated and enthusiastic Software Engineering student at Sir Syed University of Engineering and Technology with a strong foundation in programming, software development,web development and data analysis. With hands-on experience in multiple languages, frameworks, and tools, I have enhanced my skills through various academic projects and over a dozen professional certifications. I am passionate about building real-world solutions and always eager to learn and grow in the tech industry.
+                    </p>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                        <!-- 'Hire Me' button now opens Gmail with a pre-filled email address -->
+                        <a href="mailto:azanamir384@gmail.com" class="btn-primary">Hire Me</a>
+                        <!-- 'Contact Me' button now has the same style as 'Hire Me' -->
+                        <a href="#contact" class="btn-primary">Contact Me</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bio & Skills Section -->
+        <section id="bio" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Bio & Skills</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        A quick overview of my professional journey and the technical skills I've acquired.
+                    </p>
+                </div>
+                <!-- Responsive grid that stacks cards on mobile -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-card p-8 animate-in">
+                        <h3 class="text-2xl font-semibold mb-4 text-white">About Me</h3>
+                        <p class="text-gray-400">
+                        I am Syed Muhammad Azan, a dedicated Software Engineering student at Sir Syed University of Engineering & Technology (SSUET) with a strong background in software development, web technologies, and data analytics.
+
+Core Skills & Technologies:
+
+Programming & Backend: Java, Python, Spring Boot, Node.js, Express.js
+
+Web Development: HTML, CSS, JavaScript, MongoDB, SQL
+
+Data Analytics & Visualization: NumPy, Pandas, Matplotlib, Excel, Tableau, Power BI
+
+I am passionate about turning data into insights and building scalable software solutions that solve real-world problems. Currently, I am seeking internships and collaborative opportunities where I can apply my skills, learn from professionals, and contribute to impactful projects.
+
+Always motivated to learn, innovate, and grow in the fields of software engineering, web development, and data science.
+                        </p>
+                    </div>
+                    <div class="glass-card p-8 animate-in" style="transition-delay: 0.2s;">
+                        <h3 class="text-2xl font-semibold mb-4 text-white">Technical Skills</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Java</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Python</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Data Analyst</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">HTML</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">CSS</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">JavaScript</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">SQL</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Node.js</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">MIPS Assembly</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">MySQL</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">MongoDB</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">SQL Server</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Git</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">VS Code</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Power BI</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Excel</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">OOP</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Data Structures</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Algorithms</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">DBMS</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">APIs</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Web Development</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Project Management</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Agile Methodology</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">SDLC</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Testing</span>
+                            <span class="bg-gray-800 text-white rounded-full px-4 py-2 text-sm font-semibold hover:bg-accent-purple transition-colors cursor-default">Python libraries</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section id="education" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Education</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        My academic qualifications.
+                    </p>
+                </div>
+                <!-- Vertical pin-point map layout for education -->
+                <div class="timeline-container max-w-3xl mx-auto">
+                    <!-- Education 1 -->
+                    <div class="timeline-item glass-card p-6 md:p-8 animate-in">
+                        <i class="fas fa-university text-3xl text-accent-purple mb-4"></i>
+                        <h4 class="text-xl font-bold text-white">BS Software Engineering</h4>
+                        <p class="text-accent-purple mb-1">Sir Syed University of Engineering and Technology, Karachi</p>
+                        <p class="text-sm text-gray-400">2023 - Present (Completed 2 Years)</p>
+                    </div>
+                    <!-- Education 2 -->
+                    <div class="timeline-item glass-card p-6 md:p-8 animate-in" style="transition-delay: 0.2s;">
+                        <i class="fas fa-school text-3xl text-accent-purple mb-4"></i>
+                        <h4 class="text-xl font-bold text-white">FSC Pre-Engineering</h4>
+                        <p class="text-accent-purple mb-1">Adamjee Government Science College, Karachi</p>
+                        <p class="text-sm text-gray-400">2021 - 2023</p>
+                    </div>
+                    <!-- Education 3 -->
+                    <div class="timeline-item glass-card p-6 md:p-8 animate-in" style="transition-delay: 0.4s;">
+                        <i class="fas fa-graduation-cap text-3xl text-accent-purple mb-4"></i>
+                        <h4 class="text-xl font-bold text-white">Matriculation (Science Group)</h4>
+                        <p class="text-accent-purple mb-1">The Sun City Grammar School, Karachi</p>
+                        <p class="text-sm text-gray-400">2021</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Internships & Experience Section -->
+        <section id="internships" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Internships & Experience</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        A look at my professional internships and hands-on experience in the industry.
+                    </p>
+                </div>
+                <!-- Horizontal swiping container with navigation buttons -->
+                <div class="relative">
+                    <!-- Left and right control buttons for desktop -->
+                    <button id="internship-prev-btn" class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 text-white p-3 rounded-full shadow-lg z-20 hover:bg-accent-purple transition-colors focus:outline-none">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="internship-next-btn" class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 text-white p-3 rounded-full shadow-lg z-20 hover:bg-accent-purple transition-colors focus:outline-none">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Scrollable container -->
+                    <div id="internship-scroll-container" class="horizontal-scroll-container">
+                        <!-- Internship 1: GAO TEK USA INC -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in">
+                            <h3 class="text-xl font-semibold mb-2 text-white">GAO Tek Inc USA</h3>
+                            <p class="text-gray-400 mb-2">Web Development  Intern</p>
+                            <p class="text-gray-500 text-sm mb-2">AUG 2025</p>
+                            <p class="text-gray-500 text-sm mb-4">REMOTE 3.5 MONTH</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="OFFER AND AGREE GAO TEK.jpeg">
+                                View Offerletter
+                            </button>
+                        </div>
+                        <!-- Internship 2: Code Alpha -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in" style="transition-delay: 0.1s;">
+                            <h3 class="text-xl font-semibold mb-2 text-white">Accenture Nordics's </h3>
+                            <p class="text-gray-400 mb-2">Software Engineering Job Simulation on Forage</p>
+                            <p class="text-gray-500 text-sm mb-4">AUG 2025</p>
+                            <p class="text-gray-500 text-sm mb-4">Virtual</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="ACCENTURE.jpeg">
+                                View Certificate
+                            </button>
+                        </div>
+                        <!-- Internship 3: InfoByte -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in" style="transition-delay: 0.2s;">
+                            <h3 class="text-xl font-semibold mb-2 text-white">Walmart USA's</h3>
+                            <p class="text-gray-400 mb-2">Advanced Software Engineering on Forage</p>
+                            <p class="text-gray-500 text-sm mb-4">JULY 2025</p>
+                             <p class="text-gray-500 text-sm mb-4">Virtual</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="WALMART.jpeg">
+                                View Certificate
+                            </button>
+                        </div>
+                        <!-- Internship 4: Interne Intelligence and Infos -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in" style="transition-delay: 0.3s;">
+                            <h3 class="text-xl font-semibold mb-2 text-white">Tata</h3>
+                            <p class="text-gray-400 mb-2">GenAI Powered Data Analytics on Forage </p>
+                            <p class="text-gray-500 text-sm mb-4">JULY 2025</p>
+                             <p class="text-gray-500 text-sm mb-4">Virtual</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="TATA.jpeg">
+                                View Certificate
+                            </button>
+                        </div>
+                        <!-- Internship 5: Interne Intelligence and Infos -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in" style="transition-delay: 0.3s;">
+                            <h3 class="text-xl font-semibold mb-2 text-white">Code Alpha</h3>
+                            <p class="text-gray-400 mb-2">Python Programming/p>
+                            <p class="text-gray-500 text-sm mb-4">AUG 2025</p>
+                             <p class="text-gray-500 text-sm mb-4">Virtual 1 MONTH</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="CODE ALPHA.jpeg">
+                                View Offerletter
+                            </button>
+                        </div>
+                        <!-- Internship 6: Interne Intelligence and Infos -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in" style="transition-delay: 0.3s;">
+                            <h3 class="text-xl font-semibold mb-2 text-white">Intern Intelligence</h3>
+                            <p class="text-gray-400 mb-2">Python Development/p>
+                            <p class="text-gray-500 text-sm mb-4">AUG 2025</p>
+                             <p class="text-gray-500 text-sm mb-4">Virtual 1 MONTH</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="INTERN INTELLIGENCE.jpeg">
+                                View Offerletter
+                            </button>
+                        </div>
+                        <!-- Internship 7: Interne Intelligence and Infos -->
+                        <div class="horizontal-scroll-item glass-card p-8 flex flex-col items-center text-center animate-in" style="transition-delay: 0.3s;">
+                            <h3 class="text-xl font-semibold mb-2 text-white">Prodigy InfoTech</h3>
+                            <p class="text-gray-400 mb-2">Software Development Intern</p>
+                            <p class="text-gray-500 text-sm mb-4">AUG 2025</p>
+                             <p class="text-gray-500 text-sm mb-4">Virtual 1 MONTH</p>
+                            <button class="view-internship-doc btn-primary w-full text-center" data-certificate-src="PRODIGY INFOTECT.jpeg">
+                                View Offerletter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Projects</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        A look at my hands-on experience and significant projects.
+                    </p>
+                </div>
+                <!-- Responsive grid for projects -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Project 1: DSA Linked List Visualizer -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">DSA Linked List Visualizer</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Built an interactive tool to visualize operations on linked lists using data structures and algorithms. Enhanced understanding of traversal, insertion, and deletion concepts.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 2: Weather Forecast System (DBMS) -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.1s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Weather Forecast System (DBMS)</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Developed a database-driven app to fetch and display weather data. Implemented CRUD operations and optimized SQL queries.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 3: Cleanup Scheduler -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.2s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Cleanup Scheduler</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Designed a scheduling system to automate and manage digital cleanup processes. Focused on task automation and UI/UX design.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 4: Online Food Ordering System -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.3s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Online Food Ordering System</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Created a food delivery website with dynamic menu, order placement, and payment simulation using HTML, CSS, and JS.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 5: Fitness Club Management -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.4s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Fitness Club Management</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Built using HTML, CSS, JavaScript, Node.js, and MSSQL to manage user profiles, workout plans, and trainer schedules.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 6: Car Rental System (SDA) -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.5s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Car Rental System (SDA)</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Designed a complete software architecture for a car rental service, demonstrating clean modular design, use of patterns, and scalable structure.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 7: Diet Planner -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.6s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Diet Planner (Spring Boot + Java)</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Developed a smart diet planning system with Java Spring Boot. Included user input, diet matching algorithm, and meal suggestions.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 8: QR Code Generator -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.7s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">QR Code Generator (Python)</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Built a desktop tool to generate QR codes from input text or URLs using Python libraries.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 9: PDF Maker -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.8s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">PDF Maker (Python)</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Implemented a file generator tool to convert text input into styled PDF documents using ReportLab/Fpdf in Python.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 10: Hotel Management System -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 0.9s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Hotel Management System</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Created a front-end hotel booking interface using HTML, Bootstrap, CSS, and JavaScript.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 11: CPU Scheduler Simulator -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 1.0s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">CPU Scheduler Simulator</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Simulated the Round Robin CPU scheduling algorithm for Operating System concepts. Visual output showed process execution and time slicing.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 12:PORTOFIO WEBSITE -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 1.0s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">PORTOFIO WEBSITE</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Created a unique and professional portfolio website to showcase my skills, projects, and achievements with a modern and responsive design using (HTML,CSS & JS) & HOSTING IN GITHUB.
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <!-- Project 12 -->
+                    <div class="glass-card p-8 flex flex-col items-start animate-in" style="transition-delay: 1.0s;">
+                        <h3 class="text-2xl font-semibold mb-2 text-white">Integrated Python Projects Launcher</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">
+                            Built a Python desktop application with Tkinter that combines multiple mini and advanced projects in one window. Integrated libraries like requests, os, and random to add diverse functionalities, allowing users to launch and explore projects with a single click
+                        </p>
+                        <a href="#" target="_blank" class="text-accent-purple hover:underline mt-auto inline-flex items-center">
+                            View Project <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Academic Rewards & Certifications Section -->
+        <section id="certificates" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Professional & Course Certifications</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        A list of my professional and academic certifications.
+                    </p>
+                </div>
+                <!-- Responsive grid for certificates -->
+                <div id="certificate-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Certificate 1: Python 101 for Data Science -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Python 101 for Data Science</h3>
+                        <p class="text-gray-500 text-sm mb-4">Powered By IBM Developer Skills Network</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This course provides an introduction to Python for data science, covering fundamental concepts and libraries essential for data manipulation and analysis.
+                        </p>
+                        <a href="https://courses.cognitiveclass.ai/certificates/250e063521594e0da7713f5e45cb42ea" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate CRASH COURSE PYTHON -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Crash Course on Python </h3>
+                        <p class="text-gray-500 text-sm mb-4">offered by Google through Coursera</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This program enhanced my proficiency in Python programming, with a focus on:
+👉 Automation using Python scripts
+👉Core data structures (strings, lists, dictionaries)
+👉Object-oriented programming fundamentals
+👉Debugging and problem-solving strategies
+                        </p>
+                        <a href="https://www.coursera.org/account/accomplishments/verify/RYORGHPUN15N" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate Introduction to Git and GitHub -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Introduction to Git and GitHub</h3>
+                        <p class="text-gray-500 text-sm mb-4">offered by Google through Coursera</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This certification helped me strengthen my understanding of version control, collaboration workflows, and open-source contributions all essential skills for software development.
+                        </p>
+                        <a href="https://www.coursera.org/account/accomplishments/verify/6T6FNAL8A9YV" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate Google Agile Essentials -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Google Agile Essentials</h3>
+                        <p class="text-gray-500 text-sm mb-4">offered by Google through Coursera</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Google Agile Essentials certificate badge have completed six modules designed to teach the Agile project management approach and key elements of popular frameworks under the Agile umbrella, including Scrum. I have applied my knowledge through hands-on activities, quizzes, and a cumulative assessment. I am able to transfer my new skills to future jobs.
+                        </p>
+                        <a href="https://www.coursera.org/account/accomplishments/verify/1U8H8EAIWUYB" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 2: Python for Data Science (IBM) -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Python for Data Science</h3>
+                        <p class="text-gray-500 text-sm mb-4">By IBM</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            A deeper dive into using Python for data science tasks, including data collection, cleaning, visualization, and building basic machine learning models.
+                        </p>
+                        <a href="https://www.credly.com/badges/140b3080-9c84-41d6-9fea-7966e6e45fe2" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 3: Java Programming -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Java Programming</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Greatlearning</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This certification demonstrates proficiency in core Java programming concepts, object-oriented principles, and application development.
+                        </p>
+                        <button class="view-credential-btn btn-primary mt-auto w-full text-center" data-certificate-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Certificate+Image">
+                            View Credential
+                        </button>
+                    </div>
+                    <!-- Certificate 4: SQL and Relational Databases -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">SQL and Relational Databases</h3>
+                        <p class="text-gray-500 text-sm mb-4">Powered by IBM Developer Skills Network</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Covers relational database concepts and practical skills in SQL for data querying, manipulation, and database management.
+                        </p>
+                        <a href="https://courses.cognitiveclass.ai/certificates/048f12b2429345609e6d60ec4cb69254" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate Excel: From Beginner to Expert -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Excel: From Beginner to Expert</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Analytics Vidhya</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This learning journey has equipped me with advanced Excel skills from mastering functions and pivot tables to automating tasks with macros and leveraging data analysis tools that will significantly boost my productivity and analytical insights.
+                        </p>
+                        <a href="https://coursera.org/verify/CI3K3662U5WW" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                            <!-- Certificate Python for Prompt Engineering -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Python for Prompt Engineering</h3>
+                        <p class="text-gray-500 text-sm mb-4">By EdQuest</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Learned how to use Python to write better prompts and improve AI results.
+Excited to use these skills in future projects with best score
+                        </p>
+                        <a href="https://courses.analyticsvidhya.com/certificates/iwob6uehhp" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 5: Build a computer vision app with Azure Cognitive Services -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Computer Vision App with Azure</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Microsoft</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Hands-on experience building a computer vision application using Microsoft Azure's powerful cognitive services.
+                        </p>
+                        <a href="https://coursera.org/verify/CI3K3662U5WW" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 6: Project Management -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Project Management</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Open University</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This certification covers the fundamental principles of project management, from initiation to completion, ensuring projects are delivered efficiently.
+                        </p>
+                        <a href="https://www.open.edu/openlearn/money-business/leadership-management/project-management-the-start-the-project-journey/content-section-0" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate MOOC -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">English for Career Development MOOC </h3>
+                        <p class="text-gray-500 text-sm mb-4">offered by the Online Professional English Network (OPEN) and sponsored by the U.S. Department of State.</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This course helped me strengthen my professional communication skills, especially for the international job market 🌍 from CV writing to interview preparation and workplace communication.
+                        </p>
+                        <a href="https://api.badgr.io/public/assertions/NwrCv6-CT26Bxt4jcakJLg" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 7: Data Analyst -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Data Analyst</h3>
+                        <p class="text-gray-500 text-sm mb-4">Issued by Oneroadmap.io</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This credential validates core data analysis skills, including data cleaning, manipulation, and visualization techniques.
+                        </p>
+                        <a href="https://oneroadmap.io/skills/da/certificate/CERT-AC297E07" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 8: Microsoft Excel for Data Analysis -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Microsoft Excel for Data Analysis</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Coursera Project Network</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Demonstrates proficiency in using Excel's advanced features for data analysis, including pivot tables, functions, and data modeling.
+                        </p>
+                        <a href="https://coursera.org/verify/KB3U049MDIAV" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Certificate 9: WordPress Web Development -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">WordPress Web Development</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Coursera</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Provides skills in building and managing websites using the WordPress platform, a popular content management system.
+                        </p>
+                        <a href="https://coursera.org/verify/OGINZ4WZ1PPQ" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <!-- Additional certificates that are initially hidden -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in hidden-certificate">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Environmental Intelligence: Geospatial APIs</h3>
+                        <p class="text-gray-500 text-sm mb-4">By IBM training</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Focuses on using geospatial data and APIs to build applications for environmental intelligence, a key skill for modern data scientists.
+                        </p>
+                        <button class="view-credential-btn btn-primary mt-auto w-full text-center" data-certificate-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Certificate+Image">
+                            View Credential
+                        </button>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-start animate-in hidden-certificate">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Object detection with Faster R-CNN and PyTorch</h3>
+                        <p class="text-gray-500 text-sm mb-4">Powered by IBM Developer Skills Network</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Covers advanced concepts in computer vision, training and implementing object detection models using the popular Faster R-CNN architecture and PyTorch framework.
+                        </p>
+                        <a href="https://courses.cognitiveclass.ai/certificates/8095cd63bfdd4670bcd7467dde6a93a3" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-start animate-in hidden-certificate">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Content-Led SEO</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Brian Dean, Semrush</p>
+                        <p class="text-400 mb-4 flex-grow">
+                            Provides expertise in search engine optimization (SEO) focusing on creating high-quality, relevant content to drive organic traffic.
+                        </p>
+                        <a href="https://static.semrush.com/academy/certificates/c28f53f7a9/syed-muhammad-azan%202.pdf" target="_blank" class="btn-primary mt-auto w-full text-center">
+                            View Credential
+                        </a>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-start animate-in hidden-certificate">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Safety Management</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Cambridge International Qualifications, UK</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Covers principles and practices of workplace safety management.
+                        </p>
+                        <button class="view-credential-btn btn-primary mt-auto w-full text-center" data-certificate-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Certificate+Image">
+                            View Credential
+                        </button>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-start animate-in hidden-certificate">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">Power BI Basics</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Cambridge International Qualifications, UK</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Introduction to Power BI for data visualization and business intelligence.
+                        </p>
+                        <button class="view-credential-btn btn-primary mt-auto w-full text-center" data-certificate-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Certificate+Image">
+                            View Creditionals
+                        </button>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-start animate-in hidden-certificate">
+                        <i class="fas fa-certificate text-3xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-xl mb-2">HTML, CSS, and JavaScript</h3>
+                        <p class="text-gray-500 text-sm mb-4">By Alison</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            This certification covers the foundational building blocks of web development.
+                        </p>
+                        <button class="view-credential-btn btn-primary mt-auto w-full text-center" data-certificate-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Certificate+Image">
+                            View Credential
+                        </button>
+                    </div>
+                </div>
+                <!-- Button to show all certificates -->
+                <div class="text-center mt-8">
+                    <button id="show-all-certs-btn" class="btn-primary">
+                        Show All Certificates (+)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Awards & Achievements Section -->
+        <section id="awards" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Awards & Achievements</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        Recognitions and achievements that highlight my dedication and success.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Example Award Card 1 -->
+                    <div class="glass-card p-6 flex flex-col items-start animate-in">
+                        <h3 class="text-white font-semibold text-xl mb-2">Data Structures and Algorithms</h3>
+                        <p class="text-gray-500 text-sm mb-4">Sir Syed University of Engineering and Technology</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Honored for presenting the "DSA Linked List Visualizer" project with exceptional clarity, technical depth, and engaging delivery to a panel of faculty and industry experts.
+                        </p>
+                        <button class="view-award-btn btn-primary mt-auto w-full text-center" data-award-src="SHIELD DSA.jpeg">
+                            View Award
+                        </button>
+                         <p class="text-gray-500 text-sm mb-4"></p>
+                        <button class="view-award-btn btn-primary mt-auto w-full text-center" data-award-src="Syed Muhammad Azan.png">
+                            View Certificate
+                        </button>
+                    </div>
+                    <!-- Example Award Card 2 
+                    <div class="glass-card p-6 flex flex-col items-start animate-in" style="transition-delay: 0.2s;">
+                        <h3 class="text-white font-semibold text-xl mb-2">Finalist at Inter-University Hackathon</h3>
+                        <p class="text-gray-500 text-sm mb-4">Hackathon 2023</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Recognized for developing a novel solution for urban waste management using AI and a mobile application, securing a place in the top 10 out of 200 teams.
+                        </p>
+                        <button class="view-award-btn btn-primary mt-auto w-full text-center" data-award-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Hackathon+Finalist+Award">
+                            View Award
+                        </button>
+                    </div>-->
+                    <!-- Example Award Card 3 
+                    <div class="glass-card p-6 flex flex-col items-start animate-in" style="transition-delay: 0.4s;">
+                        <h3 class="text-white font-semibold text-xl mb-2">Best Student Presenter</h3>
+                        <p class="text-gray-500 text-sm mb-4">Annual Student Project Showcase</p>
+                        <p class="text-gray-400 mb-4 flex-grow">
+                            Honored for presenting the "DSA Linked List Visualizer" project with exceptional clarity, technical depth, and engaging delivery to a panel of faculty and industry experts.
+                        </p>
+                        <button class="view-award-btn btn-primary mt-auto w-full text-center" data-award-src="https://placehold.co/800x600/2d3748/e2e8f0?text=Best+Presenter+Award">
+                            View Award
+                        </button>
+                    </div> -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 px-4">
+            <div class="container mx-auto">
+                <div class="text-center mb-16 animate-in">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Get in Touch</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">
+                        Feel free to contact me for collaboration or opportunities. I'd love to hear from you!
+                    </p>
+                </div>
+                <!-- Responsive grid for contact cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 text-center animate-in">
+                        <i class="fas fa-envelope text-4xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-lg mb-2">Email</h3>
+                        <a href="mailto:azanamir384@gmail.com" class="text-gray-400 hover:text-white transition-colors">azanamir384@gmail.com</a>
+                    </div>
+                    <div class="glass-card p-8 text-center animate-in" style="transition-delay: 0.2s;">
+                        <i class="fab fa-linkedin-in text-4xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-lg mb-2">LinkedIn</h3>
+                        <a href="https://linkedin.com/in/syed-muhammad-azan-570309312" target="_blank" class="text-gray-400 hover:text-white transition-colors">syed-muhammad-azan-570309312</a>
+                    </div>
+                    <div class="glass-card p-8 text-center animate-in" style="transition-delay: 0.4s;">
+                        <i class="fas fa-phone-alt text-4xl text-accent-purple mb-4"></i>
+                        <h3 class="text-white font-semibold text-lg mb-2">Phone</h3>
+                        <p class="text-gray-400">0312-2147946</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-8 text-center text-gray-400 bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-lg mt-10">
+            <div class="container mx-auto">
+                <p>© 2024 — Designed & Developed by Syed Muhammad Azan .</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Certificate Modal/Lightbox -->
+    <div id="certificate-modal" class="modal">
+        <span class="modal-close">&times;</span>
+        <div class="modal-content">
+            <img id="modal-certificate-image" src="" alt="Certificate" />
+        </div>
+    </div>
+    
+    <!-- JavaScript for Animations and 3D Scene -->
+    <script>
+        // 3D Background with Three.js
+        window.onload = function() {
+            const container = document.getElementById('three-container');
+            let scene, camera, renderer, particles;
+            let mouseX = 0, mouseY = 0;
+
+            function init() {
+                // Scene setup
+                scene = new THREE.Scene();
+
+                // Camera setup
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
+
+                // Renderer setup
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(renderer.domElement);
+
+                // Create particles
+                const particleCount = 500;
+                const geometry = new THREE.BufferGeometry();
+                const positions = [];
+                const colors = [];
+                const color = new THREE.Color();
+                const material = new THREE.PointsMaterial({
+                    size: 0.05,
+                    vertexColors: true,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending
+                });
+
+                for (let i = 0; i < particleCount; i++) {
+                    const x = (Math.random() - 0.5) * 10;
+                    const y = (Math.random() - 0.5) * 10;
+                    const z = (Math.random() - 0.5) * 10;
+                    positions.push(x, y, z);
+                    
+                    // Assign a random color
+                    color.setHSL(Math.random(), 0.8, 0.5);
+                    colors.push(color.r, color.g, color.b);
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                
+                particles = new THREE.Points(geometry, material);
+                scene.add(particles);
+
+                // Event listeners
+                window.addEventListener('resize', onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                document.addEventListener('touchmove', onTouchMove, false);
+            }
+
+            // Handle window resize
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            // Handle mouse movement for parallax effect
+            function onMouseMove(event) {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            }
+            
+            function onTouchMove(event) {
+                event.preventDefault(); // Prevent scrolling
+                const touch = event.touches[0];
+                mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(touch.clientY / window.innerHeight) * 2 + 1;
+            }
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Update particle rotation based on mouse position
+                particles.rotation.x += (mouseY * 0.05 - particles.rotation.x) * 0.05;
+                particles.rotation.y += (mouseX * 0.05 - particles.rotation.y) * 0.05;
+
+                renderer.render(scene, camera);
+            }
+
+            init();
+            animate();
+        };
+
+        // General JavaScript for the rest of the site
+        document.addEventListener("DOMContentLoaded", function() {
+            // Intersection Observer for scroll animations
+            const animatedElements = document.querySelectorAll('.animate-in');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            animatedElements.forEach(item => {
+                observer.observe(item);
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Hide mobile menu when a link is clicked
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            // Certificate Modal and Zoom Functionality
+            const modal = document.getElementById('certificate-modal');
+            const modalImage = document.getElementById('modal-certificate-image');
+            const closeBtn = document.querySelector('.modal-close');
+            // Combine selectors for certificates and awards
+            const viewButtons = document.querySelectorAll('.view-credential-btn, .view-internship-doc, .view-award-btn');
+
+            // Open the modal when a button is clicked
+            viewButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const imageUrl = button.getAttribute('data-certificate-src') || button.getAttribute('data-award-src');
+                    modalImage.src = imageUrl;
+                    modal.classList.add('is-visible');
+                });
+            });
+
+            // Close the modal when the close button or background is clicked
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('is-visible');
+                modalImage.classList.remove('zoomed'); // Reset zoom
+            });
+            
+            modal.addEventListener('click', (e) => {
+                // Close if the click is on the modal background, not the image
+                if (e.target === modal) {
+                    modal.classList.remove('is-visible');
+                    modalImage.classList.remove('zoomed'); // Reset zoom
+                }
+            });
+
+            // Toggle zoom on the image
+            modalImage.addEventListener('click', () => {
+                modalImage.classList.toggle('zoomed');
+            });
+
+            // Show all certificates logic
+            const showAllBtn = document.getElementById('show-all-certs-btn');
+            const hiddenCerts = document.querySelectorAll('.hidden-certificate');
+            
+            showAllBtn.addEventListener('click', () => {
+                hiddenCerts.forEach(cert => {
+                    cert.classList.remove('hidden-certificate');
+                });
+                showAllBtn.style.display = 'none'; // Hide the button after it's clicked
+            });
+
+            // Internship horizontal swipe button logic
+            const internshipContainer = document.getElementById('internship-scroll-container');
+            const internshipNextBtn = document.getElementById('internship-next-btn');
+            const internshipPrevBtn = document.getElementById('internship-prev-btn');
+            
+            if (internshipNextBtn && internshipPrevBtn && internshipContainer) {
+                internshipNextBtn.addEventListener('click', () => {
+                    const scrollAmount = internshipContainer.scrollWidth / internshipContainer.children.length;
+                    internshipContainer.scrollBy({
+                        left: scrollAmount,
+                        behavior: 'smooth'
+                    });
+                });
+
+                internshipPrevBtn.addEventListener('click', () => {
+                    const scrollAmount = internshipContainer.scrollWidth / internshipContainer.children.length;
+                    internshipContainer.scrollBy({
+                        left: -scrollAmount,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
