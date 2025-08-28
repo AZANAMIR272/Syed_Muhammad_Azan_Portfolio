@@ -140,9 +140,10 @@
             max-height: 90%;
             position: relative;
         }
+        /* Adjusted modal image to be more fluid on all screens */
         .modal-content img {
-            max-width: 40%;
-            max-height: 40%;
+            max-width: 70%;
+            max-height: 70%;
             object-fit: contain;
             transition: transform 0.3s ease;
             cursor: zoom-in;
@@ -225,7 +226,7 @@
         /* Custom styling for horizontal scrolling section for internships */
         .horizontal-scroll-container {
             display: flex;
-            overflow-x: hidden; /* Hide the native scrollbar */
+            overflow-x: scroll; /* Use scroll instead of hidden to make it more obvious on some devices */
             -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
             scroll-snap-type: x mandatory; /* Snaps cards to the start as you swipe */
             gap: 2rem;
@@ -249,7 +250,6 @@
         .horizontal-scroll-container::-webkit-scrollbar {
             display: none;
         }
-
     </style>
 </head>
 <body class="antialiased">
@@ -293,7 +293,7 @@
             </nav>
             <!-- Mobile Navigation Menu - Toggles on/off via JavaScript -->
             <nav id="mobile-menu" class="hidden md:hidden text-center mt-4 space-y-2">
-                <a class="block py-2 text-gray-300 hover:text-white" href="#bio">About/a>
+                <a class="block py-2 text-gray-300 hover:text-white" href="#bio">About</a>
                 <a class="block py-2 text-gray-300 hover:text-white" href="#skills">Skills</a>
                 <a class="block py-2 text-gray-300 hover:text-white" href="#education">Education</a>
                 <a class="block py-2 text-gray-300 hover:text-white" href="#internships">Work&Internships</a>
@@ -311,22 +311,22 @@
                 
                 <!-- Left Column: Profile Photo (centers on mobile, adjusts on desktop) -->
                 <div class="w-full md:w-1/2 flex justify-center animate-in">
-                    <!-- The profile-photo container now has the glowing effect -->
-                    <div class="profile-photo w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full flex items-center justify-center">
+                    <!-- The profile-photo container now has the glowing effect and responsive sizing -->
+                    <div class="profile-photo w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full flex items-center justify-center">
                         <img class="object-cover object-center w-full h-full rounded-full" alt="Syed Muhammad Azan" src="picofme.png">
                     </div>
                 </div>
 
                 <!-- Right Column: Name & Text (centers on mobile, left-aligns on desktop) -->
                 <div class="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left animate-in" style="transition-delay: 0.2s;">
-                    <p class="text-xl sm:text-2xl text-gray-300 mb-4 font-light">Hello, I'm</p>
-                    <h1 class="text-5xl sm:text-7xl lg:text-5xl font-black text-white mb-4 leading-tight">
+                    <p class="text-lg sm:text-xl text-gray-300 mb-4 font-light">Hello, I'm</p>
+                    <h1 class="text-2xl sm:text-4xl lg:text-4xl font-black text-white mb-4 leading-tight">
                         <span class="typing-effect">Syed Muhammad Azan</span>
                     </h1>
-                    <h2 class="text-2xl sm:text-3xl font-medium text-accent-purple mb-8">
+                    <h2 class="text-xl sm:text-2xl font-medium text-accent-purple mb-8">
                         SOFTWARE ENGINEER
                     </h2>
-                    <p class="max-w-prose text-lg text-gray-400 mb-10">
+                    <p class="max-w-prose text-base sm:text-lg text-gray-400 mb-10">
                         I am a dedicated and enthusiastic Software Engineering student at Sir Syed University of Engineering and Technology with a strong foundation in programming, software development,web development and data analysis. With hands-on experience in multiple languages, frameworks, and tools, I have enhanced my skills through various academic projects and over a dozen professional certifications. I am passionate about building real-world solutions and always eager to learn and grow in the tech industry.
                     </p>
                     <div class="flex flex-wrap justify-center md:justify-start gap-4">
@@ -448,6 +448,10 @@ Always motivated to learn, innovate, and grow in the fields of software engineer
                     <p class="text-gray-400 max-w-2xl mx-auto">
                         A look at my professional internships and hands-on experience in the industry.
                     </p>
+                </div>
+                <!-- Message to guide mobile users to swipe -->
+                <div class="text-center text-gray-400 text-sm mb-4 md:hidden animate-in">
+                    <i class="fas fa-arrow-left animate-pulse"></i> Swipe left to see more <i class="fas fa-arrow-right animate-pulse"></i>
                 </div>
                 <!-- Horizontal swiping container with navigation buttons -->
                 <div class="relative">
@@ -813,7 +817,7 @@ Excited to use these skills in future projects with best score
                         <p class="text-gray-500 text-sm mb-4">By Microsoft</p>
                         <p class="text-gray-400 mb-4 flex-grow">
                             Hands-on experience building a computer vision application using Microsoft Azure's powerful cognitive services.
-                        </p>
+                        
                         <a href="https://coursera.org/verify/CI3K3662U5WW" target="_blank" class="btn-primary mt-auto w-full text-center">
                             View Credential
                         </a>
@@ -1040,7 +1044,7 @@ Excited to use these skills in future projects with best score
         <!-- Footer -->
         <footer class="py-8 text-center text-gray-400 bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-lg mt-10">
             <div class="container mx-auto">
-                <p>© 2024 — Designed & Developed by Syed Muhammad Azan .</p>
+                <p>© 2025 — Designed & Developed by Syed Muhammad Azan .</p>
             </div>
         </footer>
 
